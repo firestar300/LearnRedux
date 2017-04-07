@@ -1,6 +1,6 @@
-# Boilerplate React App
+# LearnRedux
 
-Simple ReactJS boilerplate with Webpack, Foundation and Karma.
+A playground for test some features of Redux with ReactJS
 
 ## Installation
 
