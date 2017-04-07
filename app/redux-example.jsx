@@ -1,16 +1,10 @@
 var redux = require('redux');
+var axios = require('axios');
 
 console.log('%c Starting Redux example ', 'background: #222; color: #bada55');
 
-const DEFAULT_STATE = {
-  name : 'Me',
-  hobbies : [],
-  movies: []
-};
-
-var nextHobbyId = 1;
-var nextMovieId = 1;
-
+// Name Reducer and action generators
+// ---------------------------------
 var nameReducer = (state = 'Anonymous', action) => {
   switch (action.type) {
     case 'CHANGE_NAME':
@@ -20,6 +14,16 @@ var nameReducer = (state = 'Anonymous', action) => {
   }
 };
 
+var changeName = (name) => {
+  return {
+    type: 'CHANGE_NAME',
+    name // Equivalent to `name: name`
+  };
+};
+
+// Hobbies Reducer and action generators
+// ---------------------------------
+var nextHobbyId = 1;
 var hobbiesReducer = (state = [], action) => {
   switch (action.type) {
     case 'ADD_HOBBY':
@@ -37,6 +41,23 @@ var hobbiesReducer = (state = [], action) => {
   }
 };
 
+var addHobby = (hobby) => {
+  return {
+    type: 'ADD_HOBBY',
+    hobby
+  };
+};
+
+var removeHobby = (id) => {
+  return {
+    type: 'REMOVE_HOBBY',
+    id
+  };
+};
+
+// Movies Reducer and action generators
+// ---------------------------------
+var nextMovieId = 1;
 var moviesReducer = (state = [], action) => {
   switch (action.type) {
     case 'ADD_MOVIE':
@@ -54,10 +75,68 @@ var moviesReducer = (state = [], action) => {
   }
 };
 
+var addMovie = (movie) => {
+  return {
+    type: 'ADD_MOVIE',
+    movie
+  };
+};
+
+var removeMovie = (id) => {
+  return {
+    type: 'REMOVE_MOVIE',
+    id
+  };
+};
+
+// Map Reducer and action generators
+// ---------------------------------
+var mapReducer = (state = {isFetching: false, url: undefined}, action) => {
+  switch (action.type) {
+    case 'START_LOCATION_FETCH':
+      return {
+        isFetching: true,
+        url: undefined
+      };
+    case 'COMPLETE_LOCATION_FETCH':
+      return {
+        isFetching: false,
+        url: action.url
+      };
+    default:
+      return state;
+  }
+};
+
+var startLocationFetch = () => {
+  return {
+    type: 'START_LOCATION_FETCH'
+  }
+};
+
+var completeLocationFetch = (url) => {
+  return {
+    type: 'COMPLETE_LOCATION_FETCH',
+    url
+  }
+};
+
+var fetchLocation = () => {
+  store.dispatch(startLocationFetch());
+
+  axios.get('http://ipinfo.io').then((res) => {
+    var loc = res.data.loc;
+    var baseUrl = 'http://maps.google.com?q=';
+
+    store.dispatch(completeLocationFetch(baseUrl + loc));
+  });
+};
+
 var reducer = redux.combineReducers({
   name: nameReducer,
   hobbies: hobbiesReducer,
-  movies: moviesReducer
+  movies: moviesReducer,
+  map: mapReducer
 });
 
 var store = redux.createStore(reducer, redux.compose(window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()))
@@ -66,9 +145,13 @@ var store = redux.createStore(reducer, redux.compose(window.__REDUX_DEVTOOLS_EXT
 var unsuscribe = store.subscribe(() => {
   var state = store.getState();
 
-  document.getElementById('app').innerHTML = state.name;
-
   console.log('New state', store.getState());
+
+  if(state.map.isFetching) {
+    document.getElementById('app').innerHTML = 'Loading';
+  } else if (state.map.url) {
+    document.getElementById('app').innerHTML = '<a href="'+ state.map.url+'" target="_blank">View your location</a>';
+  }
 });
 
 // unsuscribe();
@@ -76,48 +159,20 @@ var unsuscribe = store.subscribe(() => {
 var currentState = store.getState();
 console.log('currentState', currentState);
 
-store.dispatch({
-  type: 'CHANGE_NAME',
-  name: 'Milan'
-});
+fetchLocation();
 
-store.dispatch({
-  type: 'ADD_HOBBY',
-  hobby: 'Running'
-});
+store.dispatch(changeName('Milan'));
 
-store.dispatch({
-  type: 'ADD_HOBBY',
-  hobby: 'Sleep'
-});
+store.dispatch(addHobby('Running'));
 
-store.dispatch({
-  type: 'REMOVE_HOBBY',
-  id: 2
-});
+store.dispatch(addHobby('Sleep'));
 
-store.dispatch({
-  type: 'CHANGE_NAME',
-  name: 'François'
-});
+store.dispatch(removeHobby(2));
 
-store.dispatch({
-  type: 'ADD_MOVIE',
-  movie: {
-    title: 'Star Wars',
-    genre: 'Sci-Fi'
-  }
-});
+store.dispatch(changeName('Jan'));
 
-store.dispatch({
-  type: 'ADD_MOVIE',
-  movie: {
-    title: 'Mad Max',
-    genre: 'Action'
-  }
-});
+store.dispatch(addMovie({title: 'Star Wars', genre: 'Sci-Fi'}));
 
-store.dispatch({
-  type: 'REMOVE_MOVIE',
-  id: 2
-});
+store.dispatch(addMovie({title: 'Mad Max', genre: 'Action'}));
+
+store.dispatch(removeMovie(2));
