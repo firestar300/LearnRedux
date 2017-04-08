@@ -3833,6 +3833,10 @@ reduce-function-call@^1.0.1:
   dependencies:
     balanced-match "^0.4.2"
 
+redux-thunk@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/redux-thunk/-/redux-thunk-2.0.1.tgz#f0b31070fa1a243a4b19f904befdc2ee439aade9"
+
 redux@3.3.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/redux/-/redux-3.3.1.tgz#716df8004786deaf01c93ae396c84fc1041e424b"
